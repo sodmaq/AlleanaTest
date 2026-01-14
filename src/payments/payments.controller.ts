@@ -1,34 +1,70 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { InitiatePaymentDto, VerifyPaymentDto } from './dto/payment.dto';
 
 @Controller('payments')
+@UseGuards(JwtAuthGuard)
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(private paymentsService: PaymentsService) {}
 
-  @Post()
-  create(@Body() createPaymentDto: CreatePaymentDto) {
-    return this.paymentsService.create(createPaymentDto);
+  @Post('initiate')
+  async initiatePayment(
+    @CurrentUser() user: any,
+    @Body() dto: InitiatePaymentDto,
+  ) {
+    const payment = await this.paymentsService.initiatePayment(
+      user.userId,
+      dto,
+    );
+    return {
+      message: 'Payment initiated successfully',
+      payment: {
+        reference: payment.reference,
+        amount: payment.amount,
+        status: payment.status,
+        paymentMethod: payment.paymentMethod,
+      },
+    };
   }
 
-  @Get()
-  findAll() {
-    return this.paymentsService.findAll();
+  @Post('verify')
+  async verifyPayment(@CurrentUser() user: any, @Body() dto: VerifyPaymentDto) {
+    const payment = await this.paymentsService.verifyPayment(
+      dto.reference,
+      user.userId,
+    );
+    return {
+      message:
+        payment.status === 'completed'
+          ? 'Payment verified successfully'
+          : 'Payment verification failed',
+      payment: {
+        reference: payment.reference,
+        amount: payment.amount,
+        status: payment.status,
+        completedAt: payment.completedAt,
+        errorMessage: payment.errorMessage,
+      },
+    };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.paymentsService.findOne(+id);
+  @Get('history')
+  async getPaymentHistory(@CurrentUser() user: any) {
+    const payments = await this.paymentsService.getPaymentHistory(user.userId);
+    return { payments };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-    return this.paymentsService.update(+id, updatePaymentDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.paymentsService.remove(+id);
+  @Get(':reference')
+  async getPayment(
+    @CurrentUser() user: any,
+    @Param('reference') reference: string,
+  ) {
+    const payment = await this.paymentsService.getPaymentByReference(
+      reference,
+      user.userId,
+    );
+    return { payment };
   }
 }

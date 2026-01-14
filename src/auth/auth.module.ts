@@ -14,7 +14,7 @@ import { WalletModule } from '../wallet/wallet.module';
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '24h' },
+      signOptions: { expiresIn: Number(process.env.JWT_EXPIRES_IN) || '24h' },
     }),
   ],
   providers: [AuthService, JwtStrategy],
