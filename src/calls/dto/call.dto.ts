@@ -10,7 +10,7 @@ export class InitiateCallDto {
   callType: CallType;
 
   @IsOptional()
-  metadata?: any;
+  metadata?: Record<string, any>;
 }
 
 export class UpdateCallStatusDto {

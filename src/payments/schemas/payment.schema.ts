@@ -42,8 +42,8 @@ export class Payment {
   @Prop()
   provider: string;
 
-  @Prop()
-  metadata: any;
+  @Prop({ type: Object })
+  metadata: Record<string, any>;
 
   @Prop()
   errorMessage: string;

@@ -38,8 +38,8 @@ export class Transaction {
   @Prop({ required: true })
   reference: string;
 
-  @Prop()
-  metadata: any;
+  @Prop({ type: Object })
+  metadata: Record<string, any>;
 
   @Prop()
   balanceBefore: number;

@@ -55,11 +55,11 @@ export class CallSession {
   @Prop()
   endReason: string;
 
-  @Prop()
-  metadata: any;
+  @Prop({ type: Object })
+  metadata: Record<string, any>;
 
-  @Prop()
-  signalingData: any;
+  @Prop({ type: Object })
+  signalingData: Record<string, any>;
 }
 
 export const CallSessionSchema = SchemaFactory.createForClass(CallSession);
